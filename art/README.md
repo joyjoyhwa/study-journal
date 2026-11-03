@@ -25,3 +25,8 @@ JPEG는 Windows System.Drawing으로 크기 조절과 품질 82 인코딩만 수
 ```text
 Use case: stylized-concept. Asset type: original cinematic hero image for a Korean personal study journal about understanding and the dream of entering virtual worlds. Generate a wide 16:9 landscape, high detail, no typography. A believable quiet stone corridor in the foreground opens through a monumental rectangular doorway into an impossibly beautiful world: a glass-still turquoise lake, distant floating sandstone gardens and elegant waterfalls dissolving into low cloud, an enormous subtle pale moon and warm golden dawn. No people, no faces. The threshold and continuous stone path invite the viewer to walk from ordinary reality into the magical landscape. Sophisticated architectural photography meets original cinematic worldbuilding, tactile stone, atmospheric depth, restrained teal, sage and soft gold, extraordinary beauty without neon sci-fi clichés. Composition: doorway and extraordinary vista dominate the right 60 percent, main portal centered at roughly 68 percent of image width; the left 35 percent is dark quiet stone and natural shadow with minimal detail to leave room for a website headline. Preserve a strong central-right crop that also works on a portrait mobile screen. Elegant, immersive, physically plausible light, not a video game screenshot. No logos, no watermark, no words, no recognizable existing IP, no brain imagery, no real identifying location.
 ```
+
+
+## 연속 스크롤 이야기의 시각 자산
+
+책, 연결 지도, 열리는 문, 하나의 빛과 궤적은 `scripts/story.mjs` 및 `public/assets/story.css`에서 이 프로젝트를 위해 직접 작성한 SVG/CSS입니다. 외부 도안·영상·모델·폰트를 가져오지 않았습니다. 문 안과 마지막 장면은 위 AI 풍경 이미지의 기존 JPEG 파일을 재사용합니다. 새로운 생성 이미지나 타인의 IP는 추가하지 않았습니다. 연출은 학습 목표의 상징이며 실제 뇌신호나 기술 작동의 재현이 아닙니다.
