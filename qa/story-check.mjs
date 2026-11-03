@@ -76,7 +76,10 @@ try{
   }
   await seek(tab,.1);const cdp=await mobile.newCDPSession(tab);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:330,y:650}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:330,y:250}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await tab.waitForFunction(()=>Number(document.querySelector('.scroll-story').dataset.progress)>.15);
   for(const width of [320,760]){await tab.setViewportSize({width,height:844});await seek(tab,.64);assert.ok(await tab.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
-  await tab.setViewportSize({width:320,height:568});await seek(tab,.64);await capture(tab,'story-small-screen');await audit(tab,'small-screen');await mobile.close();
+  await tab.setViewportSize({width:320,height:568});await seek(tab,.64);await capture(tab,'story-small-screen');await audit(tab,'small-screen');
+  await tab.setViewportSize({width:740,height:390});
+  for(const progress of [0,.34,.64,1]){await seek(tab,progress);const s=await state(tab);assert.ok(s.x>0&&s.x<740&&s.y>74&&s.y<310,'The light stays between the header and controls in landscape');assert.ok(await tab.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+  await seek(tab,.64);await capture(tab,'story-mobile-landscape');await audit(tab,'landscape');await mobile.close();
  });
  await check('Orientation change preserves the current scene',async()=>{
   await go();await ready(page);await seek(page,.64);await page.setViewportSize({width:768,height:900});await page.waitForFunction(()=>Math.abs(Number(document.querySelector('.scroll-story').dataset.progress)-.64)<.01);await page.setViewportSize({width:1440,height:1000});
