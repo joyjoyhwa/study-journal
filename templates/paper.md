@@ -2,6 +2,7 @@
 title: "논문 제목 또는 읽으며 떠오른 질문"
 date: "YYYY-MM-DD"
 category: "paper"
+theme: "forest"
 tags: ["논문 읽기"]
 summary: "읽은 범위와 이번에 살펴본 질문을 적어 주세요."
 draft: true
