@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node browser-check.mjs"
+    "test": "node browser-check.mjs",
+    "test:motion": "node motion-check.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

@@ -1,0 +1,7 @@
+// The illustration is decorative worldbuilding, never a record of actual study.
+export function portalHero(href, arrow) {
+  const image = width => href(`/images/threshold-${width}.jpg`);
+  return `<figure class="portal-figure"><section class="portal-hero" aria-labelledby="portal-title"><div class="portal-scene"><picture><img class="portal-image" src="${image(1672)}" srcset="${image(480)} 480w, ${image(960)} 960w, ${image(1672)} 1672w" sizes="(max-width: 760px) 180vw, (max-width: 1256px) 100vw, 1176px" width="1672" height="941" fetchpriority="high" decoding="async" alt="어두운 돌문 너머로 황금빛 호수와 폭포, 하늘에 떠 있는 정원과 커다란 달이 펼쳐진 상상 풍경"></picture></div><div class="portal-shade" aria-hidden="true"></div><div class="portal-frame" aria-hidden="true"></div><div class="portal-copy"><span class="portal-kicker">A LITTLE LEARNING, EVERY DAY</span><h1 id="portal-title">오늘의 이해를,<br>내일의 <em>질문</em>으로.</h1><p>논문을 읽고, 기초를 공부하고,<br>이해한 만큼 적습니다.</p><p class="portal-note">풀다이브를 향해 천천히 쌓아 가는 공부의 기록.</p><a class="portal-link" href="${href('/notes/')}">공부 기록 펼쳐 보기 ${arrow}</a></div><div class="portal-coordinate" aria-hidden="true"><span>BEYOND THE THRESHOLD</span><span>상상에서, 한 걸음씩.</span></div></section><figcaption class="portal-caption"><span>낯선 세계를 향한 작은 창.</span><span>AI 생성 이미지 · 상상한 가상 세계</span></figcaption></figure>`;
+}
+
+export const motionControl = '<button class="motion-toggle" type="button" aria-pressed="false" hidden><span class="motion-symbol" aria-hidden="true">◌</span>페이지 움직임 <span data-motion-state aria-hidden="true">끔</span></button>';

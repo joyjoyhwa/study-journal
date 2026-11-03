@@ -1,0 +1,68 @@
+/* Static by default: no script, no animation API and reduced motion remain readable. */
+.portal-figure{margin:30px 0 58px}
+.portal-hero{position:relative;isolation:isolate;min-height:590px;overflow:hidden;border-radius:12px;background:#102b27;color:#fffdf6;display:flex;align-items:center}
+.portal-scene,.portal-shade,.portal-frame{position:absolute;inset:0;pointer-events:none}
+.portal-scene{inset:-24px 0;transform:translateY(var(--scene-y,0px))}
+.portal-scene picture{display:block;width:100%;height:100%}
+.portal-image{display:block;width:100%;height:100%;object-fit:cover;object-position:68% center;transform:scale(1.045)}
+.portal-shade{background:linear-gradient(90deg,rgba(8,25,23,.96) 0%,rgba(8,25,23,.91) 29%,rgba(8,25,23,.76) 43%,rgba(8,25,23,.27) 60%,rgba(8,25,23,.03) 80%)}
+.portal-frame{inset:15px;border:1px solid rgba(248,242,217,.24);border-radius:5px}
+.portal-copy{position:relative;z-index:1;padding:70px 54px;width:54%;max-width:600px}
+.portal-kicker{display:block;font-size:10px;letter-spacing:2px;font-weight:600;color:#e0d9bf;margin-bottom:31px;line-height:1.7}
+.portal-copy h1{font-family:var(--serif);font-weight:400;font-size:clamp(38px,4.15vw,58px);line-height:1.35;letter-spacing:-2.2px;color:#fffdf6;margin:0 0 26px;word-break:keep-all}
+.portal-copy em{font-style:normal;color:#f2d89f}
+.portal-copy p{font-size:15px;line-height:1.9;color:#eeeae0;margin:0;word-break:keep-all}
+.portal-copy .portal-note{font-size:12px;margin-top:12px;color:#e1e2d6;max-width:300px}
+.portal-link{display:inline-flex;align-items:center;gap:28px;margin-top:34px;padding:13px 19px;border:1px solid #e1d9bd;background:#eee9d6;color:#163a30;border-radius:3px;font-size:13px;min-height:48px;transition:background .2s,transform .2s}
+.portal-link:hover{background:#fff8e1;transform:translateY(-2px)}
+.portal-link svg{width:20px;height:20px}
+.portal-link:focus-visible{outline:3px solid #fff;outline-offset:5px}
+.portal-coordinate{position:absolute;right:34px;bottom:32px;display:flex;align-items:flex-end;flex-direction:column;gap:7px;color:#fff;font-size:11px;text-shadow:0 1px 8px #102b27;background:rgba(7,23,20,.72);padding:12px 14px;border-radius:3px}
+.portal-coordinate span:first-child{font-size:9px;letter-spacing:2px}
+.portal-caption{display:flex;justify-content:space-between;gap:16px;color:var(--muted);font-size:11px;line-height:1.7;padding:13px 2px 0}
+.portal-caption span:first-child{font-family:var(--serif);font-size:13px;color:var(--ink)}
+.motion-toggle{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--line);border-radius:30px;min-height:40px;padding:6px 13px;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.motion-toggle[hidden]{display:none}
+.motion-toggle:disabled{cursor:default}
+.motion-toggle [data-motion-state]{font-size:10px;background:var(--soft);padding:2px 5px;border-radius:4px}
+.motion-symbol{font-size:20px;line-height:1}
+.reading-progress{position:fixed;left:0;top:0;z-index:30;width:100%;height:2px;pointer-events:none;background:var(--green);transform:scaleX(var(--reading-progress,0));transform-origin:left;display:none}
+body[data-motion="on"] .reading-progress{display:block}
+@media(max-width:1000px) and (min-width:761px){
+  .portal-copy{padding:54px 36px;width:62%}
+  .portal-copy h1{font-size:42px}
+  .portal-kicker{font-size:9px;letter-spacing:1.5px}
+  .portal-hero{min-height:560px}
+  .portal-shade{background:linear-gradient(90deg,rgba(8,25,23,.97),rgba(8,25,23,.85) 40%,rgba(8,25,23,.38) 67%,rgba(8,25,23,.06))}
+}
+@media(max-width:760px){
+  .portal-figure{margin:16px 0 40px}
+  .portal-hero{display:flex;flex-direction:column;align-items:stretch;min-height:0;border-radius:9px}
+  .portal-scene{position:relative;inset:auto;width:100%;aspect-ratio:1.12;overflow:hidden;transform:none}
+  .portal-image{object-position:80% center}
+  .portal-shade{inset:0 0 auto;aspect-ratio:1.12;background:linear-gradient(180deg,transparent 65%,rgba(16,43,39,.25) 85%,#102b27)}
+  .portal-frame{inset:10px}
+  .portal-copy{width:100%;max-width:none;padding:20px 28px 36px}
+  .portal-kicker{font-size:9px;letter-spacing:1.5px;margin-bottom:20px;color:#dcd6bc}
+  .portal-copy h1{font-size:clamp(32px,8.5vw,48px);line-height:1.35;letter-spacing:-1.8px;margin-bottom:20px}
+  .portal-copy p{font-size:14px}
+  .portal-copy .portal-note{font-size:11px;margin-top:10px}
+  .portal-link{margin-top:24px;font-size:12px}
+  .portal-coordinate{display:none}
+  .portal-caption{flex-wrap:wrap;gap:3px;font-size:10px}
+  .portal-caption span:first-child{font-size:11px}
+  .portal-caption span:last-child{margin-left:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  .portal-scene{transform:none!important}
+  .portal-link{transition:none;transform:none}
+  .reading-progress{display:none!important}
+}
+body[data-motion="off"] .portal-scene{transform:none}
+body[data-motion="off"] .portal-link{transition:none;transform:none}
+@media print{
+  .portal-hero{min-height:0;display:block;background:white;color:black;border:1px solid #ccc}
+  .portal-scene,.portal-shade,.portal-frame,.portal-coordinate,.motion-toggle,.reading-progress{display:none!important}
+  .portal-copy{width:100%;padding:25px}
+  .portal-copy h1,.portal-copy em,.portal-copy p,.portal-kicker{color:black}
+}
