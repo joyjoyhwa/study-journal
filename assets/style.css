@@ -513,7 +513,7 @@ img{
   font-family:Georgia,serif;
   font-size:28px;
   line-height:1.2;
-  color:#687761
+  color:var(--green)
 }
 .post-date time{
   font-family:Georgia,serif;
