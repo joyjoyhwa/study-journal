@@ -42,17 +42,17 @@ test('Real Markdown theme fields render separate article palettes under a Pages 
     assert.equal(result.postCount,3);
     for (const key of ['ocean','clay']) {
       const html = await readFile(path.join(result.outDir,`notes/fixture-${key}/index.html`),'utf8');
-      assert.match(html,new RegExp(`<body data-theme="${key}">`));
+      assert.match(html,new RegExp(`<body data-theme="${key}"(?:\\s[^>]*)?>`));
       assert.ok(html.includes(`name="theme-color" content="${themes[key].colors.paper}"`));
       assert.ok(html.includes('href="/study-journal/notes/"'));
       assert.ok(html.includes('href="/study-journal/assets/themes.css"'));
       assert.match(html,/<h2 id="a-readable-heading">/);
     }
     const original = await readFile(path.join(result.outDir,'notes/default-fixture/index.html'),'utf8');
-    assert.match(original,/<body data-theme="forest">/);
+    assert.match(original,/<body data-theme="forest"(?:\s[^>]*)?>/);
     assert.match(original,/name="theme-color" content="#f6f5f0"/);
     const home = await readFile(path.join(result.outDir,'index.html'),'utf8');
-    assert.match(home,/<body data-theme="forest">/);
+    assert.match(home,/<body data-theme="forest"(?:\s[^>]*)?>/);
     const feed = await readFile(path.join(result.outDir,'feed.xml'),'utf8');
     assert.ok(!feed.includes('/guide/themes/'));
     const css = await readFile(path.join(result.outDir,'assets/themes.css'),'utf8');
@@ -60,7 +60,7 @@ test('Real Markdown theme fields render separate article palettes under a Pages 
     assert.ok(css.includes(`--paper: ${themes.clay.colors.paper}`));
     for (const key of Object.keys(themes)) {
       const preview = await readFile(path.join(result.outDir,`guide/themes/${key}/index.html`),'utf8');
-      assert.ok(preview.includes(`<body data-theme="${key}">`));
+      assert.ok(preview.includes(`<body data-theme="${key}"`));
       assert.ok(preview.includes('실제 공부 기록은 아닙니다.'));
       assert.ok(preview.includes('href="/study-journal/guide/daily/"'));
     }

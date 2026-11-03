@@ -18,11 +18,16 @@ const context = await browser.newContext({viewport:{width:1440,height:1100},devi
 context.setDefaultTimeout(10000);
 for (const signal of ['SIGINT','SIGTERM']) process.once(signal,async () => { await browser.close(); process.exit(1); });
 const page = await context.newPage();
-const result = {base,browser:await browser.version(),checks:[],errors:[],accessibility:[],screenshots:[]};
+const result = {base,browser:await browser.version(),checks:[],errors:[],canceledImageLoads:[],accessibility:[],screenshots:[]};
 page.on('pageerror',error => result.errors.push(error.message));
-page.on('requestfailed',request => result.errors.push(`${request.url()}: ${request.failure()?.errorText}`));
+page.on('requestfailed',request => {
+  // Responsive candidate loads can be canceled by this suite's immediate resize/navigation.
+  const message = `${request.url()}: ${request.failure()?.errorText}`;
+  if (request.resourceType() === 'image' && request.failure()?.errorText === 'net::ERR_ABORTED') result.canceledImageLoads.push(message);
+  else result.errors.push(message);
+});
 async function check(name,run) { try { await run(); result.checks.push({name,passed:true}); console.log(`PASS ${name}`); } catch (error) { result.checks.push({name,passed:false,error:error.message}); console.error(`FAIL ${name}: ${error.message.slice(0,350)}`); } }
-async function go(route = '') { const response = await page.goto(new URL(route,base).href); await page.evaluate(() => document.fonts.ready); return response; }
+async function go(route = '') { const response = await page.goto(new URL(route,base).href); await page.evaluate(() => Promise.all([document.fonts.ready,...[...document.images].map(img => img.decode())])); return response; }
 async function shot(name) { const filename = `${name}.png`; await page.screenshot({path:path.join(screenshots,filename),fullPage:true}); result.screenshots.push(filename); }
 async function visiblePosts(count) { assert.equal(await page.locator('[data-post]:visible').count(),count); }
 async function noOverflow() { assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),`Horizontal overflow at ${page.viewportSize().width}px`); }
@@ -102,7 +107,7 @@ try {
   await check('Article palettes: default, distinct colors, small-screen readability and navigation reset',async () => {
     await go('notes/2026-11-03-beginning/');
     assert.equal(await page.locator('body').getAttribute('data-theme'),'forest');
-    assert.deepEqual(await page.locator('body').evaluate(node => [getComputedStyle(node).backgroundColor,getComputedStyle(node).color]),['rgb(246, 245, 240)','rgb(52, 70, 63)']);
+    assert.deepEqual(await page.locator('.reading-layout').evaluate(node => [getComputedStyle(node).backgroundColor,getComputedStyle(node).color]),['rgb(246, 245, 240)','rgb(52, 70, 63)']);
     const backgrounds = new Set();
     for (const theme of ['forest','ocean','clay']) {
       for (const width of [1440,390,320]) {

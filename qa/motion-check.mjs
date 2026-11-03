@@ -25,7 +25,7 @@ page.on('pageerror',error=>result.errors.push(error.message));
 const go=(route='')=>page.goto(new URL(route,base).href);
 const shot=async name=>{await page.screenshot({path:path.join(shots,name+'.png'),fullPage:true});result.screenshots.push(name+'.png');};
 const check=async(name,fn)=>{try{await fn();result.checks.push({name,passed:true});console.log('PASS '+name);}catch(error){result.checks.push({name,passed:false,error:error.stack});console.error('FAIL '+name+': '+error.message.slice(0,500));}};
-const settled=tab=>tab.waitForFunction(()=>document.getAnimations().filter(a=>a.playState==='running'||a.playState==='pending').length===0);
+const settled=tab=>tab.waitForFunction(()=>document.getAnimations().filter(a=>(a.playState==='running'||a.playState==='pending') && a.effect.getTiming().iterations!==Infinity).length===0);
 const visible=async tab=>assert.ok(await tab.locator('main h1').evaluate(n=>getComputedStyle(n).visibility==='visible' && Number(getComputedStyle(n).opacity)>0 && n.getBoundingClientRect().height>0));
 try {
   await check('Generated hero loads, responsive candidates and explicit disclosure',async()=>{
@@ -37,7 +37,7 @@ try {
     const bytes=(await(await context.request.get(new URL('images/threshold-1672.jpg',base).href)).body()).length;
     assert.ok(bytes<250000);result.measurements.desktopHeroBytes=bytes;
   });
-  await check('Entrance finishes; no perpetual animation or layout shift',async()=>{
+  await check('Content entrances finish; decorative motion is separately pausable; no layout shift',async()=>{
     await settled(page);await visible(page);
     assert.equal(await page.locator('.portal-copy h1').evaluate(n=>getComputedStyle(n).opacity),'1');
     const metrics=await page.evaluate(()=>({cls:window.layoutShiftTotal,animations:document.getAnimations().length,external:performance.getEntriesByType('resource').map(r=>r.name).filter(u=>new URL(u).origin!==location.origin)}));
@@ -61,19 +61,19 @@ try {
     assert.equal(await page.locator('.portal-scene').evaluate(n=>getComputedStyle(n).transform),'none');
     await go('notes/2026-11-03-beginning/');assert.equal(await page.locator('body').getAttribute('data-motion'),'off');
     await page.reload();assert.equal(await page.locator('.motion-toggle').getAttribute('aria-pressed'),'false');
-    assert.equal(await page.evaluate(()=>document.getAnimations().length),0);
+    assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running').length),0);
   });
   await check('OS reduced motion overrides saved on and reacts immediately',async()=>{
     await page.evaluate(()=>localStorage.setItem('study-journal-motion','on'));
     await page.emulateMedia({reducedMotion:'reduce'});await go();
     assert.equal(await page.locator('body').getAttribute('data-motion'),'off');
     assert.equal(await page.locator('.motion-toggle').isDisabled(),true);
-    assert.equal(await page.evaluate(()=>document.getAnimations().length),0);
+    assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running').length),0);
     await page.emulateMedia({reducedMotion:'no-preference'});
     await page.waitForFunction(()=>document.body.dataset.motion==='on');
     await page.emulateMedia({reducedMotion:'reduce'});
     await page.waitForFunction(()=>document.body.dataset.motion==='off');
-    assert.equal(await page.evaluate(()=>document.getAnimations().length),0);
+    assert.equal(await page.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running').length),0);
   });
   await check('Keyboard focus is visible over the scene and skip link works',async()=>{
     await go();await page.keyboard.press('Tab');
@@ -95,7 +95,7 @@ try {
     const tab=await mobile.newPage();await tab.goto(base);await tab.locator('.portal-image').evaluate(img=>img.decode());await settled(tab);
     const image=await tab.locator('.portal-image').evaluate(img=>({src:img.currentSrc,width:img.naturalWidth}));
     const bytes=(await(await mobile.request.get(image.src)).body()).length;assert.ok(bytes<100000);result.measurements.mobileHero={...image,bytes};
-    assert.ok(await tab.evaluate(()=>document.querySelector('.portal-copy').getBoundingClientRect().top>=document.querySelector('.portal-scene').getBoundingClientRect().bottom-1));
+    assert.ok(await tab.evaluate(()=>document.querySelector('.portal-copy').getBoundingClientRect().bottom<=document.querySelector('.portal-scene').getBoundingClientRect().top+1));
     await tab.evaluate(()=>scrollTo({top:220,behavior:'instant'}));assert.equal(await tab.locator('.portal-scene').evaluate(n=>getComputedStyle(n).transform),'none');
     // Audit while reveals may be running: text must keep its full contrast.
     await tab.evaluate(()=>document.getAnimations().forEach(animation=>{animation.pause();animation.currentTime=0;}));
@@ -118,7 +118,7 @@ try {
   await check('Data saver and slow connection force static presentation',async()=>{
     for(const policy of [{saveData:true,effectiveType:'4g'},{saveData:false,effectiveType:'2g'}]){
       const slow=await browser.newContext();await slow.addInitScript(value=>Object.defineProperty(navigator,'connection',{get:()=>value}),policy);
-      const tab=await slow.newPage();await tab.goto(base);assert.equal(await tab.locator('body').getAttribute('data-motion'),'off');assert.equal(await tab.locator('.motion-toggle').isDisabled(),true);assert.equal(await tab.evaluate(()=>document.getAnimations().length),0);await visible(tab);await slow.close();
+      const tab=await slow.newPage();await tab.goto(base);assert.equal(await tab.locator('body').getAttribute('data-motion'),'off');assert.equal(await tab.locator('.motion-toggle').isDisabled(),true);assert.equal(await tab.evaluate(()=>document.getAnimations().filter(a=>a.playState==='running').length),0);await visible(tab);await slow.close();
     }
   });
   await check('Delayed JavaScript and throttled CPU never hide content or replay hero',async()=>{
@@ -127,7 +127,40 @@ try {
     await tab.route('**/assets/motion.js',async route=>{await new Promise(resolve=>setTimeout(resolve,2200));await route.continue();});
     await tab.goto(base,{waitUntil:'commit'});await tab.locator('main h1').waitFor();await visible(tab);assert.equal(await tab.locator('.portal-copy h1').evaluate(n=>getComputedStyle(n).opacity),'1');
     await tab.waitForLoadState('load');await tab.waitForFunction(()=>document.body.dataset.motion==='on');
-    const active=await tab.evaluate(()=>document.querySelector('.portal-hero').getAnimations({subtree:true}).length);assert.equal(active,0);await visible(tab);result.measurements.slowCPU=4;await slow.close();
+    const active=await tab.evaluate(()=>document.querySelector('.portal-hero').getAnimations({subtree:true}).filter(a=>a.playState==='running' && a.effect.getTiming().iterations!==Infinity).length);assert.equal(active,0);await visible(tab);result.measurements.slowCPU=4;await slow.close();
+  });
+  await check('Orbit artwork animates on home, archive and article; offscreen art pauses',async()=>{
+    await page.emulateMedia({reducedMotion:'no-preference'});await page.evaluate(()=>localStorage.setItem('study-journal-motion','on'));
+    for(const route of ['', 'notes/', 'notes/2026-11-03-beginning/']) {
+      await go(route);await page.waitForFunction(()=>document.querySelector('.orbit-art[data-active="true"]'));
+      const rotor=page.locator('.orbit-art[data-active="true"] .orbit-rotor').first();
+      assert.equal(await rotor.evaluate(n=>getComputedStyle(n).animationPlayState),'running');
+      const first=await rotor.evaluate(n=>getComputedStyle(n).transform);
+      await page.waitForFunction(value=>getComputedStyle(document.querySelector('.orbit-art[data-active="true"] .orbit-rotor')).transform!==value,first);
+      await page.evaluate(()=>scrollTo({top:document.body.scrollHeight,behavior:'instant'}));
+      await page.waitForFunction(()=>{
+        const outside=[...document.querySelectorAll('.orbit-art')].filter(n=>{const r=n.getBoundingClientRect();return r.bottom<0||r.top>innerHeight;});
+        return outside.length>0&&outside.every(n=>getComputedStyle(n.querySelector('.orbit-rotor')).animationPlayState==='paused');
+      });
+    }
+  });
+  await check('Pointer feedback, scroll typography and sticky reading navigation respond',async()=>{
+    await go();const path=page.locator('.path-art');await path.scrollIntoViewIfNeeded();
+    const box=await path.boundingBox();await page.mouse.move(box.x+box.width*.8,box.y+box.height*.25);
+    await page.waitForFunction(()=>document.querySelector('.path-art .orbit-art').style.getPropertyValue('--tilt-y')!=='');
+    await page.locator('[data-scroll-line]').nth(1).scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('[data-scroll-line][data-current="true"]'));
+    await go('notes/2026-11-03-beginning/');await page.locator('.prose h2').nth(2).scrollIntoViewIfNeeded();
+    await page.waitForFunction(()=>document.querySelector('.toc [aria-current="location"]'));
+    assert.equal(await page.locator('.site-header').evaluate(n=>getComputedStyle(n).position),'sticky');
+    assert.ok(await page.locator('.prose h2').nth(2).evaluate(n=>n.getBoundingClientRect().top>=0));
+  });
+  await check('Top control pauses all ambient motion immediately and keyboard restores it',async()=>{
+    await go('notes/');await page.waitForFunction(()=>document.querySelector('.orbit-art[data-active="true"]'));
+    const toggle=page.locator('.motion-toggle');await toggle.focus();await page.keyboard.press('Enter');
+    assert.equal(await page.locator('body').getAttribute('data-motion'),'off');await settled(page);
+    assert.ok(await page.locator('.orbit-rotor').evaluateAll(nodes=>nodes.every(n=>getComputedStyle(n).animationPlayState==='paused')));
+    await page.keyboard.press('Enter');await page.waitForFunction(()=>document.querySelector('.orbit-art[data-active="true"]'));
+    assert.equal(await page.locator('.motion-toggle').getAttribute('aria-pressed'),'true');
   });
   await check('No uncaught errors in normal interactions',async()=>assert.deepEqual(result.errors,[]));
 } finally {
