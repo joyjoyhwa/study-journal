@@ -60,7 +60,7 @@ try {
   });
   await check('Tag links restore filter and reset',async () => {
     await page.getByRole('link',{name:'#공부 방법',exact:true}).click(); assert.match(page.url(),/tag=/); await visiblePosts(1);
-    assert.equal(await page.locator('.active-filter').isVisible(),true);
+    await page.locator('.active-filter').waitFor({state:'visible'});assert.equal(await page.locator('.active-filter').isVisible(),true);
     await page.getByRole('button',{name:'선택 해제 ×',exact:true}).click(); assert.ok(!page.url().includes('tag=')); await visiblePosts(1);
     await go('notes/?q=%EC%97%86%EC%9D%8C'); await visiblePosts(0);
     await page.reload(); await visiblePosts(0);

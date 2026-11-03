@@ -5,7 +5,8 @@
   "scripts": {
     "test": "node browser-check.mjs",
     "test:motion": "node story-check.mjs",
-    "test:story": "node story-check.mjs"
+    "test:story": "node story-check.mjs",
+    "test:passage": "node passage-check.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
