@@ -112,8 +112,8 @@ try {
     await plain.close();
   });
   await check('Missing motion script and unsupported animation API leave content visible',async()=>{
-    const fallback=await browser.newContext();const tab=await fallback.newPage();await tab.route('**/assets/motion.js',route=>route.abort());await tab.goto(base);await visible(tab);assert.equal(await tab.locator('.motion-toggle').isVisible(),false);
-    await tab.unroute('**/assets/motion.js');await tab.addInitScript(()=>{Element.prototype.animate=undefined;});await tab.reload();await visible(tab);assert.equal(await tab.locator('.motion-toggle').isVisible(),false);await fallback.close();
+    const fallback=await browser.newContext();const tab=await fallback.newPage();await tab.route('**/assets/motion.js*',route=>route.abort());await tab.goto(base);await visible(tab);assert.equal(await tab.locator('.motion-toggle').isVisible(),false);
+    await tab.unroute('**/assets/motion.js*');await tab.addInitScript(()=>{Element.prototype.animate=undefined;});await tab.reload();await visible(tab);assert.equal(await tab.locator('.motion-toggle').isVisible(),false);await fallback.close();
   });
   await check('Data saver and slow connection force static presentation',async()=>{
     for(const policy of [{saveData:true,effectiveType:'4g'},{saveData:false,effectiveType:'2g'}]){
@@ -124,7 +124,7 @@ try {
   await check('Delayed JavaScript and throttled CPU never hide content or replay hero',async()=>{
     const slow=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'no-preference'});const tab=await slow.newPage();
     const cdp=await slow.newCDPSession(tab);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
-    await tab.route('**/assets/motion.js',async route=>{await new Promise(resolve=>setTimeout(resolve,2200));await route.continue();});
+    await tab.route('**/assets/motion.js*',async route=>{await new Promise(resolve=>setTimeout(resolve,2200));await route.continue();});
     await tab.goto(base,{waitUntil:'commit'});await tab.locator('main h1').waitFor();await visible(tab);assert.equal(await tab.locator('.portal-copy h1').evaluate(n=>getComputedStyle(n).opacity),'1');
     await tab.waitForLoadState('load');await tab.waitForFunction(()=>document.body.dataset.motion==='on');
     const active=await tab.evaluate(()=>document.querySelector('.portal-hero').getAnimations({subtree:true}).filter(a=>a.playState==='running' && a.effect.getTiming().iterations!==Infinity).length);assert.equal(active,0);await visible(tab);result.measurements.slowCPU=4;await slow.close();

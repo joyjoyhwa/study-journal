@@ -89,6 +89,8 @@ theme: "ocean"
 
 구성은 `scripts/experience.mjs`, 전체 화면 디자인은 `public/assets/editorial.css`, 모션은 `public/assets/motion.js`에서 관리합니다. 대표 이미지를 기술적으로 다시 인코딩하려면 Windows PowerShell에서 다음을 실행합니다. 원본 구도를 편집하지 않고 크기와 JPEG 압축만 바꿉니다.
 
+CSS와 JavaScript 주소에는 파일 내용으로 계산한 버전이 붙습니다. 재방문자의 브라우저에 이전 파일이 남아 있어도 새 HTML은 새 버전을 불러옵니다.
+
 ```powershell
 ./scripts/prepare-hero.ps1 -Source art/threshold-original.png
 ```
