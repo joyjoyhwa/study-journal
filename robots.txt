@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://joyjoyhwa.github.io/study-journal/sitemap.xml
