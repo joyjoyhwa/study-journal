@@ -41,15 +41,17 @@ test('Base path normalization rejects traversal and protocols', () => {
 test('Complete build: subpath links, drafts, feed, sitemap, images and empty content', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(),'study-journal-test-'));
   try {
-    for (const directory of ['content','templates','public']) await cp(path.join(projectRoot,directory),path.join(root,directory),{recursive:true});
+    for (const directory of ['templates','public']) await cp(path.join(projectRoot,directory),path.join(root,directory),{recursive:true});
     await cp(path.join(projectRoot,'site.config.json'),path.join(root,'site.config.json'));
+    await mkdir(path.join(root,'content/posts'),{recursive:true});
+    await writeFile(path.join(root,'content/posts/default-fixture.md'),'---\ntitle: "Default fixture"\ndate: "2026-11-03"\ncategory: "journal"\ntags: ["fixture"]\nsummary: "Build verification fixture"\ndraft: false\n---\n\n## Heading\n\nA temporary test fixture.\n');
     await writeFile(path.join(root,'content/posts/hidden-draft.md'),'---\ntitle: "DO-NOT-PUBLISH"\ndraft: true\n---\nPRIVATE-DRAFT-TEXT');
     const built = await build({root,basePath:'/study-log',url:'https://example.github.io'});
     assert.equal(built.postCount,1);
     const htmlFiles = [];
     async function walk(folder) { for (const file of await readdir(folder,{withFileTypes:true})) { const full = path.join(folder,file.name); if (file.isDirectory()) await walk(full); else if (file.name.endsWith('.html')) htmlFiles.push(full); } }
     await walk(built.outDir);
-    assert.equal(htmlFiles.length,8);
+    assert.equal(htmlFiles.length,12);
     for (const file of htmlFiles) {
       const html = await readFile(file,'utf8');
       assert.ok(!html.includes('DO-NOT-PUBLISH'));

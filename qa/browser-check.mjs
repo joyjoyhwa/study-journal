@@ -60,7 +60,7 @@ try {
     await go('notes/?q=%EC%97%86%EC%9D%8C'); await visiblePosts(0);
     await page.reload(); await visiblePosts(0);
   });
-  const routes = ['', 'notes/', 'notes/2026-11-03-beginning/', 'guide/', 'guide/daily/', 'guide/paper/', 'about/', '404.html'];
+  const routes = ['', 'notes/', 'notes/2026-11-03-beginning/', 'guide/', 'guide/daily/', 'guide/paper/', 'guide/themes/', 'guide/themes/forest/', 'guide/themes/ocean/', 'guide/themes/clay/', 'about/', '404.html'];
   const urls = new Set();
   for (const route of routes) {
     await check(`Page, links and WCAG audit: /${route}`,async () => {
@@ -95,12 +95,39 @@ try {
     const plain = await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
     const tab = await plain.newPage(); await tab.goto(base); assert.equal(await tab.locator('[data-post]').count(),1);
     await tab.getByRole('link',{name:'공부를 기록할 작은 공간을 만들었다',exact:true}).click();
-    assert.equal(await tab.locator('article.prose h2').count(),6); await plain.close();
+    assert.equal(await tab.locator('article.prose h2').count(),6);
+    for (const theme of ['ocean','clay']) { await tab.goto(new URL(`guide/themes/${theme}/`,base).href); assert.equal(await tab.locator('body').getAttribute('data-theme'),theme); }
+    await plain.close();
+  });
+  await check('Article palettes: default, distinct colors, small-screen readability and navigation reset',async () => {
+    await go('notes/2026-11-03-beginning/');
+    assert.equal(await page.locator('body').getAttribute('data-theme'),'forest');
+    assert.deepEqual(await page.locator('body').evaluate(node => [getComputedStyle(node).backgroundColor,getComputedStyle(node).color]),['rgb(246, 245, 240)','rgb(52, 70, 63)']);
+    const backgrounds = new Set();
+    for (const theme of ['forest','ocean','clay']) {
+      for (const width of [1440,390,320]) {
+        await page.setViewportSize({width,height:900}); await go(`guide/themes/${theme}/`); await noOverflow();
+        assert.equal(await page.locator('body').getAttribute('data-theme'),theme);
+        backgrounds.add(await page.locator('body').evaluate(node => getComputedStyle(node).backgroundColor));
+        const type = await page.locator('.prose').evaluate(node => ({size:parseFloat(getComputedStyle(node).fontSize),line:parseFloat(getComputedStyle(node).lineHeight)}));
+        assert.ok(type.size >= 15 && type.line/type.size >= 1.8);
+        if (width !== 320) await shot(`${width === 1440 ? 'desktop' : 'mobile'}-theme-${theme}`);
+        if (width === 390) await axe(`mobile-theme-${theme}`);
+      }
+    }
+    assert.equal(backgrounds.size,3);
+    await go('guide/themes/ocean/');
+    await page.locator('.prose').getByRole('link',{name:'모든 공부 기록으로 돌아가기',exact:true}).click();
+    assert.equal(await page.locator('body').getAttribute('data-theme'),'forest'); await visiblePosts(1);
+    await page.goBack(); assert.equal(await page.locator('body').getAttribute('data-theme'),'ocean');
+    await page.locator('.theme-card[href$="/clay/"]').click(); assert.equal(await page.locator('body').getAttribute('data-theme'),'clay');
+    await page.keyboard.press('Tab');
+    assert.ok(await page.evaluate(() => document.activeElement.matches(':focus-visible') && parseFloat(getComputedStyle(document.activeElement).outlineWidth) >= 2));
   });
   await check('No page errors or failed asset requests',async () => assert.deepEqual(result.errors,[]));
 } finally {
   result.passed = result.checks.every(c => c.passed) && !result.errors.length;
-  await writeFile(path.join(directory,'browser-results.json'),JSON.stringify(result,null,2));
+  await writeFile(process.env.QA_REPORT_PATH || path.join(directory,'browser-results.json'),JSON.stringify(result,null,2));
   await browser.close();
 }
 console.log(JSON.stringify({passed:result.passed,checks:result.checks.length,screenshots:result.screenshots.length},null,2));

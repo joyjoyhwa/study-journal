@@ -1,0 +1,112 @@
+/* Non-default article palettes. The original forest rules remain unchanged. */
+body[data-theme]:not([data-theme="forest"]) .category-label {
+  color: var(--green);
+  background: var(--soft);
+  border-color: var(--line);
+}
+body[data-theme]:not([data-theme="forest"]) :is(.tag-list, .toc a, .toc a span, .article-end p, .site-footer p, .footer-links > span) {
+  color: var(--muted);
+}
+body[data-theme]:not([data-theme="forest"]) .prose strong {
+  color: var(--ink);
+}
+body[data-theme]:not([data-theme="forest"]) .prose blockquote {
+  color: var(--text);
+  background: var(--soft);
+  border-left-color: var(--green);
+}
+body[data-theme]:not([data-theme="forest"]) .prose code {
+  color: var(--ink);
+  background: var(--soft);
+}
+body[data-theme]:not([data-theme="forest"]) .prose pre {
+  color: var(--paper);
+  background: var(--ink);
+}
+body[data-theme]:not([data-theme="forest"]) .prose pre code {
+  color: inherit;
+  background: none;
+}
+body[data-theme]:not([data-theme="forest"]) :is(.prose th, .prose td) {
+  border-color: var(--line);
+}
+body[data-theme]:not([data-theme="forest"]) .prose th {
+  background: var(--soft);
+}
+body[data-theme]:not([data-theme="forest"]) .prose li::marker {
+  color: var(--green);
+}
+body[data-theme]:not([data-theme="forest"]) .prose a:not(.solid-link) {
+  text-decoration-color: var(--green);
+}
+body[data-theme]:not([data-theme="forest"]) .template-notice {
+  color: var(--text);
+  background: var(--soft);
+  border-color: var(--line);
+}
+body[data-theme]:not([data-theme="forest"]) .solid-link:hover {
+  background: var(--ink);
+}
+body[data-theme]:not([data-theme="forest"]) ::selection {
+  color: var(--ink);
+  background: var(--soft);
+}
+.theme-banner {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-top: 26px;
+  padding: 24px 28px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+.theme-banner:hover { background: var(--soft); }
+.theme-banner strong { display: block; font-size: 17px; font-weight: 500; }
+.theme-banner strong + span { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.theme-banner-dots { display: flex; flex-shrink: 0; }
+.theme-banner-dots i { width: 19px; height: 26px; display: block; border: 2px solid var(--paper); border-radius: 12px; margin-left: -5px; }
+.theme-banner-arrow { margin-left: auto; display: flex; }
+.theme-guide { padding-top: 35px; padding-bottom: 70px; }
+.theme-guide .page-intro { padding-top: 30px; }
+.theme-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; margin-top: 36px; }
+.theme-card {
+  padding: 27px;
+  background: var(--swatch-paper);
+  color: var(--swatch-ink);
+  border: 1px solid var(--swatch-line);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  transition: transform .2s;
+}
+.theme-card:hover { transform: translateY(-3px); }
+.theme-card[aria-current] { outline: 2px solid var(--swatch-accent); outline-offset: 3px; }
+.theme-sample { display: block; font-family: var(--serif); font-size: 34px; line-height: 1.5; margin-bottom: 30px; color: var(--swatch-accent); }
+.theme-sample span { display: block; border-top: 1px solid var(--swatch-line); margin-top: 15px; }
+.theme-key { font-size: 9px; letter-spacing: 1.6px; }
+.theme-card h2, .theme-card h3 { font-family: var(--serif); font-size: 27px; font-weight: 400; margin: 10px 0 12px; }
+.theme-card p { font-size: 12px; line-height: 1.9; margin-bottom: 25px; }
+.theme-card-link { font-size: 11px; margin-top: auto; }
+.theme-instructions { max-width: 700px; padding-top: 12px; }
+.theme-preview .article-header .eyebrow { margin-bottom: 20px; }
+.theme-switcher { margin-top: 60px; padding-top: 35px; border-top: 1px solid var(--line); }
+.theme-switcher > h2 { font-size: 22px; font-weight: 500; letter-spacing: -.7px; }
+@media (max-width: 760px) {
+  body[data-theme]:not([data-theme="forest"]) .toc { background: var(--soft); border-color: var(--line); }
+  .theme-banner { padding: 20px; gap: 16px; }
+  .theme-banner strong { font-size: 15px; }
+  .theme-banner strong + span { font-size: 11px; }
+  .theme-banner-dots i { width: 15px; height: 23px; }
+  .theme-banner-arrow svg { width: 18px; }
+  .theme-guide { padding-top: 23px; padding-bottom: 45px; }
+  .theme-guide .page-intro { padding-top: 22px; }
+  .theme-grid { grid-template-columns: 1fr; margin-top: 28px; gap: 20px; }
+  .theme-card { padding: 25px; }
+  .theme-sample { margin-bottom: 20px; }
+  .theme-switcher { margin-top: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .theme-card { transition: none; } }
+@media print {
+  body[data-theme]:not([data-theme="forest"]) { --paper: white; --ink: black; --text: black; --muted: #333; --green: #333; --soft: #eee; --line: #aaa; }
+  .theme-switcher { display: none; }
+}

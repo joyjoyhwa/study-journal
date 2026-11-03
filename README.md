@@ -37,6 +37,7 @@ npm run new -- basics a-basic-concept 2026-11-04
 title: "오늘 공부한 주제"
 date: "2026-11-04"
 category: "journal"
+theme: "forest"
 tags: ["개념", "공부 방법"]
 summary: "오늘 무엇을 어떻게 공부했는지 한두 문장으로 씁니다."
 draft: true
@@ -51,6 +52,26 @@ draft: true
 - 첫 글에는 실제로 확인된 활동인 기록 방식 결정과 블로그 준비만 담았습니다. 논문 노트와 기초 공부는 정직한 빈 상태로 시작합니다.
 
 공부 일지 순서는 **오늘 공부한 것 → 어떻게 공부했는지 → 이해한 내용 → 막힌 점 → 다음에 할 것 → 출처**입니다. 논문 서식은 서지정보·질문·방법·결과·한계·내 이해와 질문을 구분합니다.
+
+## 글마다 색감 고르기
+
+Markdown 맨 위의 `---` 사이에 `theme`를 적으면 그 글의 페이지에만 적용됩니다. 예를 들어 바다빛은 다음 한 줄을 추가합니다.
+
+```yaml
+theme: "ocean"
+```
+
+| 값 | 색감 | 미리보기 |
+| --- | --- | --- |
+| `forest` | 숲빛: 기존 종이색과 깊은 초록 | [숲빛 페이지](https://joyjoyhwa.github.io/study-journal/guide/themes/forest/) |
+| `ocean` | 바다빛: 서늘한 푸른 바탕과 남색 | [바다빛 페이지](https://joyjoyhwa.github.io/study-journal/guide/themes/ocean/) |
+| `clay` | 흙빛: 따뜻한 살구색 바탕과 적갈색 | [흙빛 페이지](https://joyjoyhwa.github.io/study-journal/guide/themes/clay/) |
+
+**생략하면 기존 기본색 `forest`를 유지합니다.** 분류와 무관하게 글마다 선택할 수 있고, 제목·본문·목차·인용문·표·링크가 같은 팔레트를 사용합니다. 목록이나 다음에 읽는 다른 글의 색을 바꾸거나 브라우저에 취향을 저장하지 않습니다. 테마는 빌드할 때 HTML/CSS에 적용되므로 JavaScript 없이도 보입니다.
+
+지원하지 않는 이름이나 빈 값을 넣으면 빌드가 오류를 알려 줍니다. 기본색으로 돌아가려면 `theme` 줄을 지우거나 `theme: "forest"`로 바꾸세요. [색감 선택 안내](https://joyjoyhwa.github.io/study-journal/guide/themes/)에서 실제 글 서식으로 비교할 수 있습니다. 미리보기 페이지는 학습 기록 목록·검색·Atom 피드에 포함되지 않습니다.
+
+팔레트 값은 `scripts/themes.mjs`, 테마별 본문·미리보기 스타일은 `public/assets/themes.css`에서 관리합니다. 색을 추가하거나 조정할 때는 `npm test`와 브라우저의 명도 대비 검사를 함께 확인하세요.
 
 ## Markdown 지원 범위
 

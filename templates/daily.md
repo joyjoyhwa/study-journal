@@ -2,6 +2,7 @@
 title: "오늘 공부한 주제를 적어 주세요"
 date: "YYYY-MM-DD"
 category: "journal"
+theme: "forest"
 tags: ["주제"]
 summary: "오늘 무엇을 어떻게 공부했는지 한두 문장으로 적어 주세요."
 draft: true
