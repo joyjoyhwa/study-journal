@@ -40,7 +40,7 @@ try {
   }
   await cp(built.outDir,temporary,{recursive:true});
   git(['add','--all'],temporary);
-  if (git(['status','--porcelain'])) {
+  if (git(['status','--porcelain'],temporary)) {
     git(['commit','-m',`Publish study journal from ${sourceCommit.slice(0,12)}`],temporary);
     git(['push','-u','origin','gh-pages'],temporary);
   }
