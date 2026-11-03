@@ -1,9 +1,10 @@
 export const clamp = (value,min=0,max=1) => Math.max(min,Math.min(max,value));
-export const sceneStops = [0,.34,.64,1];
+export const sceneStops = [0,.22,.4,.57,.8,1];
 const keys = [
-  [0,.5,.68,1], [.08,.57,.53,1.12], [.23,.74,.4,1],
-  [.34,.51,.25,1.1], [.46,.3,.48,1], [.54,.43,.62,1.06],
-  [.64,.66,.54,1], [.75,.5,.45,.85], [.86,.58,.59,.7], [1,.69,.43,.42]
+  [0,.6,.74,1], [.09,.64,.59,1.05], [.17,.74,.4,1],
+  [.22,.51,.25,1.05], [.29,.43,.62,1], [.4,.65,.56,.9],
+  [.57,.65,.55,.82], [.67,.65,.52,.75], [.8,.66,.48,.58],
+  [.91,.7,.57,.43], [1,.66,.76,.7]
 ];
 const smooth = t => t*t*(3-2*t);
 function pointAt(progress) {
@@ -22,15 +23,20 @@ function pointAt(progress) {
 export function storyState(progress) {
   const p=clamp(Number.isFinite(progress)?progress:0);
   const point=pointAt(p);
-  const weights=[1,0,0,0];
-  for(let index=0;index<3;index++) {
-    const cut=[.235,.52,.785][index], blend=smooth(clamp((p-cut+.055)/.11));
+  const weights=[1,0,0,0,0,0];
+  for(let index=0;index<5;index++) {
+    const cut=[.13,.31,.46,.69,.91][index], blend=smooth(clamp((p-cut+.035)/.07));
     weights[index]*=1-blend;weights[index+1]=blend;
   }
   const active=weights.indexOf(Math.max(...weights));
   const trail=Array.from({length:24},(_,index)=>pointAt(Math.max(0,p-.055+index*.055/23)));
+  const fade=(a,b)=>smooth(clamp((p-a)/(b-a)));
+  const curve=keys=>{let i=0;while(i<keys.length-2&&p>keys[i+1][0])i++;const a=keys[i],b=keys[i+1];return a[1]+(b[1]-a[1])*smooth(clamp((p-a[0])/(b[0]-a[0])));};
   return {progress:p,point,trail,weights,active,
-    bookLift:smooth(clamp(p/.18)),network:smooth(clamp((p-.2)/.32)),
-    gateOpen:smooth(clamp((p-.56)/.2)),gateZoom:1+smooth(clamp((p-.71)/.17))*2.1,
-    worldZoom:1.18-smooth(clamp((p-.79)/.21))*.18};
+    bookLift:fade(0,.14),network:fade(.13,.31),
+    gateOpen:fade(.46,.66),gateZoom:1,worldZoom:1.45+fade(.68,.97)*.08,
+    bookOpacity:1-fade(.10,.18),mapOpacity:fade(.11,.17)*(1-fade(.28,.35)),
+    depthScales:[curve([[0,.7],[.26,.7],[.46,4.4]]),curve([[0,.55],[.30,.6],[.45,1.05],[.67,1.05],[.88,4.5]]),curve([[0,.38],[.45,.56],[.67,.65],[.8,1],[.96,4.6]])],
+    depthOpacities:[1-fade(.43,.47),1-fade(.85,.9),1-fade(.935,.965)],
+    cameraRise:fade(.67,.87),floorOpacity:fade(.46,.66)*(1-fade(.78,.93))*.17,arrival:fade(.94,1),travelling:p>.7&&p<.9};
 }

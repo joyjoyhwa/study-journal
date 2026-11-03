@@ -21,12 +21,17 @@ if (root && window.MutationObserver && CSS.supports('position','sticky')) {
   function render(progress) {
     const state=storyState(progress);lastProgress=state.progress;
     root.dataset.progress=state.progress.toFixed(4);root.dataset.scene=String(state.active);
+    root.dataset.travelling=String(state.travelling);
     stage.style.setProperty('--story-progress',state.progress.toFixed(5));
     stage.style.setProperty('--book-lift',state.bookLift.toFixed(4));
     stage.style.setProperty('--network',state.network.toFixed(4));
     stage.style.setProperty('--gate-open',state.gateOpen.toFixed(4));
     stage.style.setProperty('--gate-zoom',state.gateZoom.toFixed(4));
     stage.style.setProperty('--world-zoom',state.worldZoom.toFixed(4));
+    stage.style.setProperty('--book-opacity',state.bookOpacity.toFixed(4));
+    stage.style.setProperty('--map-opacity',state.mapOpacity.toFixed(4));
+    stage.style.setProperty('--arrival',state.arrival.toFixed(4));stage.style.setProperty('--floor-opacity',state.floorOpacity.toFixed(4));stage.style.setProperty('--camera-rise',state.cameraRise.toFixed(4));
+    state.depthScales.forEach((value,index)=>{stage.style.setProperty(`--depth-${index}`,value.toFixed(4));stage.style.setProperty(`--depth-opacity-${index}`,state.depthOpacities[index].toFixed(4));});
     signal.style.setProperty('--signal-x',state.point.x.toFixed(5));
     signal.style.setProperty('--signal-y',state.point.y.toFixed(5));
     signal.style.setProperty('--signal-scale',state.point.scale.toFixed(4));
@@ -34,8 +39,8 @@ if (root && window.MutationObserver && CSS.supports('position','sticky')) {
     scenes.forEach((scene,index)=>{
       const weight=state.weights[index];scene.dataset.shown=String(weight>.001);
       scene.style.setProperty('--scene-opacity',weight.toFixed(4));
-      scene.style.setProperty('--scene-y',`${((index-state.progress*3)*20).toFixed(2)}px`);
-      scene.style.setProperty('--caption-y',`${((1-weight)*16).toFixed(2)}px`);
+      scene.style.setProperty('--scene-y','0px');
+      scene.style.setProperty('--caption-y','0px');
       scene.setAttribute('aria-hidden',String(index!==state.active));
     });
     buttons.forEach((button,index)=>{if(index===state.active)button.setAttribute('aria-current','step');else button.removeAttribute('aria-current');});
@@ -51,7 +56,7 @@ if (root && window.MutationObserver && CSS.supports('position','sticky')) {
     const beforeHeight=previous?.height??root.offsetHeight;
     const wasBelow=previous?.below??rect.bottom<head(),wasInside=previous?.inside??(rect.top<head()&&rect.bottom>head());
     let chapter=Number(root.dataset.scene||0);
-    if(!enhanced&&wasInside)chapter=scenes.reduce((best,scene,index)=>Math.abs(scene.getBoundingClientRect().top-head())<Math.abs(scenes[best].getBoundingClientRect().top-head())?index:best,0);
+    if(!enhanced&&wasInside)chapter=scenes.reduce((best,scene,index)=>Math.abs(scene.getBoundingClientRect().top-head())<Math.abs(scenes[best].getBoundingClientRect().top-head())?index:best,chapter);
     enhanced=next;root.classList.toggle('is-story-enhanced',next);navigation.hidden=!next;
     cancelAnimationFrame(frame);frame=0;
     if(next){render(wasInside?sceneStops[chapter]:0);if(wasInside)scrollTo({top:start()+range()*sceneStops[chapter],behavior:'instant'});}
@@ -65,7 +70,7 @@ if (root && window.MutationObserver && CSS.supports('position','sticky')) {
   navigation.addEventListener('keydown',event=>{
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     event.preventDefault();const current=buttons.indexOf(document.activeElement);
-    const index=event.key==='Home'?0:event.key==='End'?3:clamp(current+(event.key==='ArrowRight'?1:-1),0,3);
+    const index=event.key==='Home'?0:event.key==='End'?buttons.length-1:clamp(current+(event.key==='ArrowRight'?1:-1),0,buttons.length-1);
     buttons[index].focus({preventScroll:true});buttons[index].click();
   });
   document.querySelectorAll('.story-skip').forEach(link=>link.addEventListener('click',event=>{
