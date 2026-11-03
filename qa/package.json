@@ -1,0 +1,12 @@
+{
+  "name": "study-journal-browser-qa",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node browser-check.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "playwright": "1.64.1"
+  }
+}

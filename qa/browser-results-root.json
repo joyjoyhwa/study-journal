@@ -1,0 +1,134 @@
+{
+  "base": "http://127.0.0.1:4173/",
+  "browser": "156.0.4314.58",
+  "checks": [
+    {
+      "name": "Home renders a real entry and desktop screenshot",
+      "passed": true
+    },
+    {
+      "name": "Category empty state and browser back/forward",
+      "passed": true
+    },
+    {
+      "name": "Search matches body text; no matches and clearing work",
+      "passed": true
+    },
+    {
+      "name": "List/detail, Korean table of contents and repeated back navigation",
+      "passed": true
+    },
+    {
+      "name": "Tag links restore filter and reset",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /notes/",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /notes/2026-11-03-beginning/",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /guide/",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /guide/daily/",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /guide/paper/",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /about/",
+      "passed": true
+    },
+    {
+      "name": "Page, links and WCAG audit: /404.html",
+      "passed": true
+    },
+    {
+      "name": "All local links and assets respond successfully",
+      "passed": true
+    },
+    {
+      "name": "Unknown routes return designed 404",
+      "passed": true
+    },
+    {
+      "name": "Markdown templates download",
+      "passed": true
+    },
+    {
+      "name": "Mobile home, menu keyboard close and menu navigation",
+      "passed": true
+    },
+    {
+      "name": "Mobile detail, paper table and responsive widths",
+      "passed": true
+    },
+    {
+      "name": "Readable without JavaScript",
+      "passed": true
+    },
+    {
+      "name": "No page errors or failed asset requests",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "home",
+      "violations": []
+    },
+    {
+      "name": "notes/",
+      "violations": []
+    },
+    {
+      "name": "notes/2026-11-03-beginning/",
+      "violations": []
+    },
+    {
+      "name": "guide/",
+      "violations": []
+    },
+    {
+      "name": "guide/daily/",
+      "violations": []
+    },
+    {
+      "name": "guide/paper/",
+      "violations": []
+    },
+    {
+      "name": "about/",
+      "violations": []
+    },
+    {
+      "name": "404.html",
+      "violations": []
+    },
+    {
+      "name": "mobile-article",
+      "violations": []
+    }
+  ],
+  "screenshots": [
+    "desktop-home.png",
+    "desktop-empty-state.png",
+    "desktop-article.png",
+    "mobile-home.png",
+    "mobile-menu.png",
+    "mobile-article.png"
+  ],
+  "passed": true
+}

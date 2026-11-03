@@ -1,0 +1,6 @@
+dist/
+node_modules/
+qa/node_modules/
+qa/screenshots/
+.DS_Store
+Thumbs.db

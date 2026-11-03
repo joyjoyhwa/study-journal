@@ -1,0 +1,13 @@
+{
+  "title": "풀다이브를 향한 공부 기록",
+  "shortTitle": "공부의 기록",
+  "description": "논문을 읽고, 기초를 공부하고, 이해한 만큼 적습니다. 오늘 무엇을 어떻게 공부했는지 남기는 작은 학습 일지입니다.",
+  "url": "",
+  "basePath": "",
+  "lang": "ko",
+  "deployment": {
+    "repository": "joyjoyhwa/study-journal",
+    "url": "https://joyjoyhwa.github.io",
+    "basePath": "/study-journal"
+  }
+}
