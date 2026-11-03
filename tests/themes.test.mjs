@@ -45,7 +45,7 @@ test('Real Markdown theme fields render separate article palettes under a Pages 
       assert.match(html,new RegExp(`<body data-theme="${key}"(?:\\s[^>]*)?>`));
       assert.ok(html.includes(`name="theme-color" content="${themes[key].colors.paper}"`));
       assert.ok(html.includes('href="/study-journal/notes/"'));
-      assert.ok(html.includes('href="/study-journal/assets/themes.css"'));
+      assert.ok(/href="\/study-journal\/assets\/themes\.css\?v=[a-f0-9]{12}"/.test(html));
       assert.match(html,/<h2 id="a-readable-heading">/);
     }
     const original = await readFile(path.join(result.outDir,'notes/default-fixture/index.html'),'utf8');
