@@ -38,5 +38,29 @@ export function storyState(progress) {
     bookOpacity:1-fade(.10,.18),mapOpacity:fade(.11,.17)*(1-fade(.28,.35)),
     depthScales:[curve([[0,.7],[.26,.7],[.46,4.4]]),curve([[0,.55],[.30,.6],[.45,1.05],[.67,1.05],[.88,4.5]]),curve([[0,.38],[.45,.56],[.67,.65],[.8,1],[.96,4.6]])],
     depthOpacities:[1-fade(.43,.47),1-fade(.85,.9),1-fade(.935,.965)],
-    cameraRise:fade(.67,.87),floorOpacity:fade(.46,.66)*(1-fade(.78,.93))*.17,arrival:fade(.94,1),travelling:p>.7&&p<.9};
+    cameraRise:fade(.67,.87),floorOpacity:fade(.46,.66)*(1-fade(.78,.93))*.17,arrival:fade(.94,1),travelling:p>.7&&p<.9,
+    ...cinematic(p,active,fade)};
+}
+// Camera language added on top of the existing journey. Every term below is exactly 0 at the six scene stops,
+// except the persistent book/map visibility, so settled frames keep the original composition.
+const deadZones=[[.10,.16],[.29,.34],[.44,.48],[.665,.93]];
+const smoother=t=>t*t*t*(t*(t*6-15)+10);
+function cinematic(p,active,fade){
+  const bump=(a,b,c,d)=>fade(a,b)*(1-fade(c,d));
+  const flareAt=c=>smoother(clamp(1-Math.abs(p-c)/.03));
+  const bookOut=fade(.085,.135),mapIn=fade(.14,.20),mapOut=fade(.27,.33);
+  const inDead=deadZones.some(([a,b])=>p>=a&&p<=b);
+  // The passage (chapter 5) is intentionally caption-free (user decision 2026-11-21).
+  const caption=inDead||active===4?-1:active;
+  const captionRest=active===4?-1:active;
+  return {
+    caption,captionRest,captionDrift:clamp((p-sceneStops[active])/.1,-1,1),
+    bookOut,bookAlpha:1-bookOut,mapIn,mapOut,mapAlpha:mapIn*(1-mapOut),mapReveal:fade(.13,.21),
+    dof:[fade(.40,.455)*(1-fade(.46,.48)),Math.max(bump(.69,.735,.765,.80),bump(.80,.835,.865,.90)),fade(.90,.955)*(1-fade(.97,.99))],
+    seamGlow:fade(.455,.49)*(1-fade(.50,.56))*.55,
+    rays:.3*bump(.60,.66,.72,.78)+.18*bump(.90,.93,.95,.985),
+    exitBloom:fade(.90,.935)*(1-fade(.945,.985)),
+    worldCrane:bump(.88,.93,.93,1),
+    flare:Math.max(flareAt(.135),flareAt(.47),flareAt(.935))
+  };
 }

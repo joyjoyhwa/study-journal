@@ -26,7 +26,7 @@
 .motion-toggle:disabled{cursor:default}
 .motion-toggle [data-motion-state]{font-size:10px;background:var(--soft);padding:2px 5px;border-radius:4px}
 .motion-symbol{font-size:20px;line-height:1}
-.reading-progress{position:fixed;left:0;top:0;z-index:30;width:100%;height:2px;pointer-events:none;background:var(--green);transform:scaleX(var(--reading-progress,0));transform-origin:left;display:none}
+.reading-progress{position:fixed;left:0;top:64px;z-index:41;width:100%;height:2px;pointer-events:none;background:var(--green);transform:scaleX(var(--reading-progress,0));transform-origin:left;display:none}
 body[data-motion="on"] .reading-progress{display:block}
 @media(max-width:1000px) and (min-width:761px){
   .portal-copy{padding:54px 36px;width:62%}
