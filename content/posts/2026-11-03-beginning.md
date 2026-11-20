@@ -1,7 +1,7 @@
 ---
 title: "공부를 기록할 작은 공간을 만들었다"
 date: "2026-11-03"
-category: "journal"
+category: "diary"
 tags: ["시작", "공부 방법", "기록"]
 summary: "오늘은 공부 기록의 방향과 형식을 정했다. 무엇을 했는지, 어떻게 했는지, 아직 모르는 것은 무엇인지 남겨 보기로 했다."
 draft: false

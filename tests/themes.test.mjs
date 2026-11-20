@@ -8,7 +8,7 @@ import { getTheme, themes } from '../scripts/themes.mjs';
 
 test('Theme metadata is optional and rejects unsupported or unsafe values', () => {
   assert.equal(getTheme().key,'forest');
-  const post = {title:'Theme test',date:'2026-11-03',category:'journal',summary:'Test',tags:[]};
+  const post = {title:'Theme test',date:'2026-11-03',category:'diary',summary:'Test',tags:[]};
   assert.doesNotThrow(() => validatePost(post,'test.md'));
   for (const theme of Object.keys(themes)) assert.doesNotThrow(() => validatePost({...post,theme},'test.md'));
   for (const theme of ['','blue','__proto__','ocean" onload="alert(1)',null,{},true]) {
@@ -36,8 +36,8 @@ test('Real Markdown theme fields render separate article palettes under a Pages 
     for (const directory of ['templates','public']) await cp(path.join(projectRoot,directory),path.join(root,directory),{recursive:true});
     await cp(path.join(projectRoot,'site.config.json'),path.join(root,'site.config.json'));
     await mkdir(path.join(root,'content/posts'),{recursive:true});
-    await writeFile(path.join(root,'content/posts/default-fixture.md'),'---\ntitle: "Default fixture"\ndate: "2026-11-03"\ncategory: "journal"\ntags: []\nsummary: "Default palette verification"\n---\n\n## Heading\n\nA temporary test fixture.\n');
-    for (const key of ['ocean','clay']) await writeFile(path.join(root,'content/posts',`fixture-${key}.md`),`---\ntitle: "Theme fixture ${key}"\ndate: "2026-11-02"\ncategory: "paper"\ntheme: "${key}"\nsummary: "Local test fixture only"\ntags: ["fixture"]\ndraft: false\n---\n\n## A readable heading\n\nThis is a local test fixture, not a study record.\n\n> A quotation.\n\n[All notes](/notes/)\n`);
+    await writeFile(path.join(root,'content/posts/default-fixture.md'),'---\ntitle: "Default fixture"\ndate: "2026-11-03"\ncategory: "diary"\ntags: []\nsummary: "Default palette verification"\n---\n\n## Heading\n\nA temporary test fixture.\n');
+    for (const key of ['ocean','clay']) await writeFile(path.join(root,'content/posts',`fixture-${key}.md`),`---\ntitle: "Theme fixture ${key}"\ndate: "2026-11-02"\ncategory: "study"\ntheme: "${key}"\nsummary: "Local test fixture only"\ntags: ["fixture"]\ndraft: false\n---\n\n## A readable heading\n\nThis is a local test fixture, not a study record.\n\n> A quotation.\n\n[All notes](/notes/)\n`);
     const result = await build({root,basePath:'/study-journal',url:'https://example.github.io'});
     assert.equal(result.postCount,3);
     for (const key of ['ocean','clay']) {
@@ -62,7 +62,7 @@ test('Real Markdown theme fields render separate article palettes under a Pages 
       const preview = await readFile(path.join(result.outDir,`guide/themes/${key}/index.html`),'utf8');
       assert.ok(preview.includes(`<body data-theme="${key}"`));
       assert.ok(preview.includes('실제 공부 기록은 아닙니다.'));
-      assert.ok(preview.includes('href="/study-journal/guide/daily/"'));
+      assert.ok(preview.includes('href="/study-journal/guide/diary/"'));
     }
   } finally {
     const relative = path.relative(path.resolve(os.tmpdir()),path.resolve(root));

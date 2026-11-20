@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const directory = path.dirname(fileURLToPath(import.meta.url));
 const base = (process.env.QA_BASE_URL || 'http://127.0.0.1:4173/').replace(/\/?$/, '/');
-const screenshots = path.join(directory,'screenshots');
+const screenshots = process.env.QA_SCREENSHOT_DIR || path.join(directory,'screenshots');
 await mkdir(screenshots,{recursive:true});
 const candidates = [process.env.BROWSER_EXECUTABLE, 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe','C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'].filter(Boolean);
 let executablePath;
@@ -37,35 +37,56 @@ async function axe(name) {
   result.accessibility.push({name,violations});
   assert.equal(violations.length,0,JSON.stringify(violations));
 }
+let totalPosts = 0;
+let typeCounts = {};
 try {
-  await check('Home renders a real entry and desktop screenshot',async () => { assert.equal((await go()).status(),200); await visiblePosts(1); assert.match(await page.title(),/풀다이브를 향한 공부 기록/); await shot('desktop-home'); await noOverflow(); });
+  await check('Home renders a real entry and desktop screenshot',async () => { assert.equal((await go()).status(),200); const types = await page.locator('[data-post]').evaluateAll(cards => cards.map(card => card.dataset.category)); totalPosts = types.length; assert.ok(totalPosts > 0); typeCounts = Object.fromEntries(['diary','experiment','study'].map(t => [t,types.filter(type => type === t).length])); await visiblePosts(totalPosts); assert.match(await page.title(),/풀다이브를 향한 공부 기록/); await shot('desktop-home'); await noOverflow(); });
   await check('Category empty state and browser back/forward',async () => {
-    await page.getByRole('button',{name:'논문 노트',exact:true}).click(); await visiblePosts(0);
-    assert.equal(await page.locator('.empty-state').isVisible(),true); assert.match(page.url(),/category=paper/); await shot('desktop-empty-state');
-    await page.goBack(); await visiblePosts(1); await page.goForward(); await visiblePosts(0);
-    await page.getByRole('button',{name:'모든 기록 보기',exact:true}).click(); await visiblePosts(1);
+    await page.getByRole('button',{name:'실험',exact:true}).click(); await visiblePosts(typeCounts.experiment);
+    if (!typeCounts.experiment) {
+      assert.equal(await page.getByText('아직 공개된 실험 기록이 없어요.',{exact:true}).isVisible(),true);
+      await shot('desktop-empty-state');
+    }
+    assert.match(page.url(),/category=experiment/);
+    await page.goBack(); await visiblePosts(totalPosts); await page.goForward(); await visiblePosts(typeCounts.experiment);
+    await page.getByRole('button',{name:typeCounts.experiment ? '전체' : '모든 기록 보기',exact:true}).click(); await visiblePosts(totalPosts);
+  });
+  await check('All three categories, URL aliases, and study post metadata',async () => {
+    for (const [key,label,count] of [['diary','일기',typeCounts.diary],['experiment','실험',typeCounts.experiment],['study','공부 노트',typeCounts.study],['journal','일기',typeCounts.diary],['paper','공부 노트',typeCounts.study],['basics','공부 노트',typeCounts.study]]) {
+      await go(`notes/?category=${key}`);
+      await visiblePosts(count);
+      assert.equal(await page.getByRole('button',{name:label,exact:true}).getAttribute('aria-pressed'),'true');
+    }
+    await page.getByRole('link',{name:'벽을 알리는 빛, 뇌파를 읽는 회로',exact:true}).click();
+    assert.ok(await page.getByRole('heading',{level:2,name:'읽기·쓰기·되먹임'}).isVisible());
+    assert.ok(await page.getByRole('link',{name:'공부 노트',exact:true}).isVisible());
+    await page.getByRole('link',{name:'공부 노트',exact:true}).click();
+    assert.match(page.url(),/category=study/); await visiblePosts(typeCounts.study);
+    await go();
   });
   await check('Search matches body text; no matches and clearing work',async () => {
-    await page.getByRole('searchbox').fill('기초 공부'); await visiblePosts(1);
+    await page.getByRole('searchbox').fill('턱 근육 활동'); assert.ok(await page.getByRole('link',{name:'벽을 알리는 빛, 뇌파를 읽는 회로',exact:true}).isVisible());
     await page.getByRole('searchbox').fill('없는검색어123'); await visiblePosts(0);
     assert.equal(await page.getByText('찾는 기록이 아직 없어요.',{exact:true}).isVisible(),true);
-    await page.getByRole('searchbox').fill(''); await visiblePosts(1);
+    await page.getByRole('searchbox').fill(''); await visiblePosts(totalPosts);
   });
   await check('List/detail, Korean table of contents and repeated back navigation',async () => {
-    for (let i=0;i<3;i++) { await page.getByRole('link',{name:'공부를 기록할 작은 공간을 만들었다',exact:true}).click(); await page.getByRole('heading',{level:1,name:'공부를 기록할 작은 공간을 만들었다'}).waitFor(); assert.equal(await page.locator('article.prose h2').count(),6); if(i===0) await shot('desktop-article'); await page.goBack(); await visiblePosts(1); }
+    for (let i=0;i<3;i++) { await page.getByRole('link',{name:'공부를 기록할 작은 공간을 만들었다',exact:true}).click(); await page.getByRole('heading',{level:1,name:'공부를 기록할 작은 공간을 만들었다'}).waitFor(); assert.equal(await page.locator('article.prose h2').count(),6); if(i===0) await shot('desktop-article'); await page.goBack(); await visiblePosts(totalPosts); }
     await page.getByRole('link',{name:'공부를 기록할 작은 공간을 만들었다',exact:true}).click();
     await page.getByRole('navigation',{name:'글 목차'}).getByRole('link',{name:'막힌 점'}).click();
     assert.ok(decodeURIComponent(page.url()).endsWith('#막힌-점'));
     await go('notes/');
   });
   await check('Tag links restore filter and reset',async () => {
-    await page.getByRole('link',{name:'#공부 방법',exact:true}).click(); assert.match(page.url(),/tag=/); await visiblePosts(1);
+    const tag = page.locator('[data-post]').filter({hasText:'벽을 알리는 빛, 뇌파를 읽는 회로'}).getByRole('link',{name:'#EEG',exact:true});
+    const tagged = await page.locator('[data-post]').evaluateAll(cards => cards.filter(card => JSON.parse(card.dataset.tags).includes('EEG')).length);
+    await tag.click(); assert.match(page.url(),/tag=/); await visiblePosts(tagged);
     await page.locator('.active-filter').waitFor({state:'visible'});assert.equal(await page.locator('.active-filter').isVisible(),true);
-    await page.getByRole('button',{name:'선택 해제 ×',exact:true}).click(); assert.ok(!page.url().includes('tag=')); await visiblePosts(1);
+    await page.getByRole('button',{name:'선택 해제 ×',exact:true}).click(); assert.ok(!page.url().includes('tag=')); await visiblePosts(totalPosts);
     await go('notes/?q=%EC%97%86%EC%9D%8C'); await visiblePosts(0);
     await page.reload(); await visiblePosts(0);
   });
-  const routes = ['', 'notes/', 'notes/2026-11-03-beginning/', 'guide/', 'guide/daily/', 'guide/paper/', 'guide/themes/', 'guide/themes/forest/', 'guide/themes/ocean/', 'guide/themes/clay/', 'about/', '404.html'];
+  const routes = ['', 'notes/', 'notes/2026-11-03-beginning/', 'notes/2026-11-20-bci-eeg-hardware/', 'guide/', 'guide/diary/', 'guide/experiment/', 'guide/study/', 'guide/daily/', 'guide/paper/', 'guide/themes/', 'guide/themes/forest/', 'guide/themes/ocean/', 'guide/themes/clay/', 'about/', '404.html'];
   const urls = new Set();
   for (const route of routes) {
     await check(`Page, links and WCAG audit: /${route}`,async () => {
@@ -80,25 +101,25 @@ try {
   }
   await check('All local links and assets respond successfully',async () => { for(const url of urls) { const response = await context.request.get(url); assert.equal(response.status(),200,url); } });
   await check('Unknown routes return designed 404',async () => { assert.equal((await go('not-a-page/')).status(),404); assert.equal(await page.getByRole('link',{name:'모든 기록으로',exact:true}).isVisible(),true); });
-  await check('Markdown templates download',async () => { await go('guide/paper/'); const pending = page.waitForEvent('download'); await page.getByRole('link',{name:'Markdown 서식 내려받기 ↓'}).click(); const download = await pending; assert.equal(download.suggestedFilename(),'paper.md'); });
+  await check('Markdown templates download',async () => { for(const [route,file] of [['diary','diary'],['experiment','experiment'],['study','study'],['daily','diary'],['paper','study']]) { await go(`guide/${route}/`); const pending = page.waitForEvent('download'); await page.getByRole('link',{name:'Markdown 서식 내려받기 ↓'}).click(); const download = await pending; assert.equal(download.suggestedFilename(),`${file}.md`); } });
   await check('Mobile home, menu keyboard close and menu navigation',async () => {
     await page.setViewportSize({width:390,height:844}); await go(); await noOverflow(); await shot('mobile-home');
     await page.getByRole('button',{name:'메뉴 열기',exact:true}).click(); assert.equal(await page.locator('#mobile-nav').isVisible(),true); await shot('mobile-menu');
     await page.keyboard.press('Escape'); assert.equal(await page.locator('#mobile-nav').isVisible(),false);
     await page.getByRole('button',{name:'메뉴 열기',exact:true}).click();
     await page.getByRole('navigation',{name:'모바일 메뉴'}).getByRole('link',{name:'모든 기록',exact:true}).click();
-    assert.ok(new URL(page.url()).pathname.endsWith('/notes/')); await visiblePosts(1);
+    assert.ok(new URL(page.url()).pathname.endsWith('/notes/')); await visiblePosts(totalPosts);
   });
   await check('Mobile detail, paper table and responsive widths',async () => {
     await go('notes/2026-11-03-beginning/'); await shot('mobile-article'); await axe('mobile-article');
     for (const width of [320,390,768,1440]) {
       await page.setViewportSize({width,height:900});
-      for (const route of ['', 'notes/2026-11-03-beginning/','guide/paper/']) { await go(route); await noOverflow(); }
+      for (const route of ['', 'notes/2026-11-03-beginning/','notes/2026-11-20-bci-eeg-hardware/','guide/','guide/experiment/']) { await go(route); await noOverflow(); }
     }
   });
   await check('Readable without JavaScript',async () => {
     const plain = await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}});
-    const tab = await plain.newPage(); await tab.goto(base); assert.equal(await tab.locator('[data-post]').count(),1);
+    const tab = await plain.newPage(); await tab.goto(base); assert.equal(await tab.locator('[data-post]').count(),totalPosts);
     await tab.getByRole('link',{name:'공부를 기록할 작은 공간을 만들었다',exact:true}).click();
     assert.equal(await tab.locator('article.prose h2').count(),6);
     for (const theme of ['ocean','clay']) { await tab.goto(new URL(`guide/themes/${theme}/`,base).href); assert.equal(await tab.locator('body').getAttribute('data-theme'),theme); }
@@ -123,7 +144,7 @@ try {
     assert.equal(backgrounds.size,3);
     await go('guide/themes/ocean/');
     await page.locator('.prose').getByRole('link',{name:'모든 공부 기록으로 돌아가기',exact:true}).click();
-    assert.equal(await page.locator('body').getAttribute('data-theme'),'forest'); await visiblePosts(1);
+    assert.equal(await page.locator('body').getAttribute('data-theme'),'forest'); await visiblePosts(totalPosts);
     await page.goBack(); assert.equal(await page.locator('body').getAttribute('data-theme'),'ocean');
     await page.locator('.theme-card[href$="/clay/"]').click(); assert.equal(await page.locator('body').getAttribute('data-theme'),'clay');
     await page.keyboard.press('Tab');

@@ -1,6 +1,6 @@
 # 풀다이브를 향한 공부 기록
 
-논문 읽기와 기초 공부를 남기는 한국어 개인 학습 블로그입니다. Node.js 기본 기능으로 Markdown을 정적 HTML로 빌드합니다. 운영·빌드에 필요한 외부 패키지, 데이터베이스, API 키가 없습니다.
+일기, 직접 수행한 실험, 논문과 기초 개념을 정리한 공부 노트를 남기는 한국어 블로그입니다. Node.js 기본 기능으로 Markdown을 정적 HTML로 빌드합니다. 운영·빌드에 필요한 외부 패키지, 데이터베이스, API 키가 없습니다.
 
 ## 시작하기
 
@@ -23,35 +23,37 @@ npm run preview
 ## 글 쓰기
 
 ```sh
-npm run new -- daily my-first-note
-npm run new -- paper reading-a-paper
-npm run new -- basics a-basic-concept 2026-11-04
+npm run new -- diary first-entry
+npm run new -- experiment signal-measurement
+npm run new -- study a-basic-concept 2026-11-04
 ```
 
-날짜 생략 시 한국시간의 오늘 날짜를 사용합니다. 명령은 `content/posts/YYYY-MM-DD-slug.md` 파일을 만들며 같은 이름을 덮어쓰지 않습니다. `templates/daily.md` 또는 `templates/paper.md`를 직접 복사해도 됩니다.
+날짜 생략 시 한국시간의 오늘 날짜를 사용합니다. 명령은 `content/posts/YYYY-MM-DD-slug.md` 파일을 만들며 같은 이름을 덮어쓰지 않습니다. `templates/diary.md`, `templates/experiment.md`, `templates/study.md` 중 하나를 직접 복사해도 됩니다.
 
 메타데이터 예시:
 
 ```yaml
 ---
-title: "오늘 공부한 주제"
+title: "공부한 개념이나 질문"
 date: "2026-11-04"
-category: "journal"
+category: "study"
 theme: "forest"
 tags: ["개념", "공부 방법"]
-summary: "오늘 무엇을 어떻게 공부했는지 한두 문장으로 씁니다."
+summary: "핵심 내용과 근거의 범위를 한두 문장으로 씁니다."
 draft: true
 ---
 ```
 
-- `category`: `journal`(공부 일지), `paper`(논문 노트), `basics`(기초 공부).
+- `category`: `diary`(일기), `experiment`(실험), `study`(공부 노트). 예전 분류 링크 `journal`, `paper`, `basics`는 계속 동작하지만, 새 글에는 위의 세 키만 사용합니다.
 - 제목·날짜·요약은 큰따옴표로 감싸고, 태그는 JSON 배열 형식으로 씁니다.
 - `draft: true`는 빌드 결과, 검색, 피드에서 제외됩니다. 글을 완성한 뒤 `draft: false`로 바꿉니다.
 - **draft는 정적 사이트에서만 제외됩니다. 공개 GitHub 저장소에 올린 원본 파일과 Git 기록은 공개됩니다.** 공개하면 안 되는 초안·신상·로그인 정보는 저장소에 넣지 마세요.
 - 날짜는 글의 학습일입니다. 예약 발행 기능은 없으며 `draft: false`인 글은 날짜에 관계없이 배포됩니다.
-- 첫 글에는 실제로 확인된 활동인 기록 방식 결정과 블로그 준비만 담았습니다. 논문 노트와 기초 공부는 정직한 빈 상태로 시작합니다.
+- 실험은 실제로 수행한 내용만 기록합니다. 논문 속 실험을 검토한 글은 공부 노트에 넣습니다.
 
-공부 일지 순서는 **오늘 공부한 것 → 어떻게 공부했는지 → 이해한 내용 → 막힌 점 → 다음에 할 것 → 출처**입니다. 논문 서식은 서지정보·질문·방법·결과·한계·내 이해와 질문을 구분합니다.
+- **일기**: 있었던 일 → 그때의 생각 → 다음에 돌아볼 것.
+- **실험**: 목적과 가설 → 장비와 조건 → 절차 → 측정·관찰 → 해석·한계 → 다음 확인.
+- **공부 노트**: 요약 → 핵심 개념 → 근거와 해석 → 남은 질문 → 출처. 대화 흐름이 아니라 주제와 근거에 맞춰 내용을 정리합니다.
 
 ## 글마다 색감 고르기
 
@@ -134,7 +136,7 @@ Remove-Item Env:BASE_PATH
 
 ```text
 content/posts/       실제 공개용 글과 초안
-templates/          공부 일지 / 논문 노트 원본 서식
+templates/          일기 / 실험 / 공부 노트 원본 서식
 public/assets/      CSS, 검색·모바일 메뉴 JS
 public/images/      화면 크기별 대표 이미지
 art/                AI 이미지 원본과 생성 출처

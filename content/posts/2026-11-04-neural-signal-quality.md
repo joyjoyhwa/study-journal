@@ -1,7 +1,7 @@
 ---
 title: "뇌의 신호가 선명해진다는 것"
 date: "2026-11-04"
-category: "journal"
+category: "diary"
 tags: ["뇌 신호", "EEG", "침습과 비침습", "신호 품질"]
 summary: "‘신호가 잘 나온다’는 말을 펼쳐보았다. 침습·비침습 기록의 차이에서 출발해, 어떤 조건에서 무엇을 하기 위해 좋은 신호인지 질문했다."
 draft: false

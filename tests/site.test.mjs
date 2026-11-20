@@ -24,8 +24,9 @@ test('Headings produce unique Korean anchors, lists and paper tables render', ()
   assert.throws(() => markdown('```js\nunfinished'),/코드 블록/);
 });
 test('Metadata rejects invalid dates, categories and accidental string draft flags', () => {
-  const good = {title:'제목',date:'2024-02-29',summary:'요약',tags:['공부'],category:'journal',draft:false};
-  assert.doesNotThrow(() => validatePost(good,'example.md'));
+  const good = {title:'제목',date:'2024-02-29',summary:'요약',tags:['공부'],category:'diary',draft:false};
+  for (const category of ['diary','experiment','study']) assert.doesNotThrow(() => validatePost({...good,category},'example.md'));
+  for (const category of ['journal','paper','basics','toString','__proto__']) assert.throws(() => validatePost({...good,category},'example.md'),/category/);
   assert.throws(() => validatePost({...good,date:'2023-02-29'},'example.md'),/날짜/);
   assert.throws(() => validatePost({...good,category:'unknown'},'example.md'),/category/);
   assert.throws(() => validatePost({...good,draft:'false'},'example.md'),/draft/);
@@ -44,14 +45,14 @@ test('Complete build: subpath links, drafts, feed, sitemap, images and empty con
     for (const directory of ['templates','public']) await cp(path.join(projectRoot,directory),path.join(root,directory),{recursive:true});
     await cp(path.join(projectRoot,'site.config.json'),path.join(root,'site.config.json'));
     await mkdir(path.join(root,'content/posts'),{recursive:true});
-    await writeFile(path.join(root,'content/posts/default-fixture.md'),'---\ntitle: "Default fixture"\ndate: "2026-11-03"\ncategory: "journal"\ntags: ["fixture"]\nsummary: "Build verification fixture"\ndraft: false\n---\n\n## Heading\n\nA temporary test fixture.\n');
+    await writeFile(path.join(root,'content/posts/default-fixture.md'),'---\ntitle: "Default fixture"\ndate: "2026-11-03"\ncategory: "diary"\ntags: ["fixture"]\nsummary: "Build verification fixture"\ndraft: false\n---\n\n## Heading\n\nA temporary test fixture.\n');
     await writeFile(path.join(root,'content/posts/hidden-draft.md'),'---\ntitle: "DO-NOT-PUBLISH"\ndraft: true\n---\nPRIVATE-DRAFT-TEXT');
     const built = await build({root,basePath:'/study-log',url:'https://example.github.io'});
     assert.equal(built.postCount,1);
     const htmlFiles = [];
     async function walk(folder) { for (const file of await readdir(folder,{withFileTypes:true})) { const full = path.join(folder,file.name); if (file.isDirectory()) await walk(full); else if (file.name.endsWith('.html')) htmlFiles.push(full); } }
     await walk(built.outDir);
-    assert.equal(htmlFiles.length,12);
+    assert.equal(htmlFiles.length,15);
     for (const file of htmlFiles) {
       const html = await readFile(file,'utf8');
       assert.ok(!html.includes('DO-NOT-PUBLISH'));
@@ -66,7 +67,23 @@ test('Complete build: subpath links, drafts, feed, sitemap, images and empty con
       }
     }
     assert.match(await readFile(path.join(built.outDir,'feed.xml'),'utf8'),/https:\/\/example.github.io\/study-log\/notes\//);
-    assert.match(await readFile(path.join(built.outDir,'sitemap.xml'),'utf8'),/\/study-log\/guide\/paper\//);
+    const sitemap = await readFile(path.join(built.outDir,'sitemap.xml'),'utf8');
+    const archive = await readFile(path.join(built.outDir,'notes/index.html'),'utf8');
+    for (const [key,label] of [['diary','일기'],['experiment','실험'],['study','공부 노트']]) {
+      assert.ok(sitemap.includes(`/study-log/guide/${key}/`));
+      assert.ok(archive.includes(`data-category-filter="${key}" aria-pressed="false">${label}`));
+      const source = await readFile(path.join(built.outDir,`templates/${key}.md`),'utf8');
+      const {data} = parseDocument(source);
+      assert.equal(data.category,key);
+      assert.equal(data.draft,true);
+    }
+    assert.ok(archive.includes('data-category="diary"'));
+    assert.ok(archive.includes('data-category-aliases="{&quot;journal&quot;:&quot;diary&quot;,&quot;paper&quot;:&quot;study&quot;,&quot;basics&quot;:&quot;study&quot;}"'));
+    for (const [old,key] of [['daily','diary'],['paper','study']]) {
+      const html = await readFile(path.join(built.outDir,`guide/${old}/index.html`),'utf8');
+      assert.ok(html.includes(`rel="canonical" href="https://example.github.io/study-log/guide/${key}/"`));
+      assert.equal(await readFile(path.join(built.outDir,`templates/${old}.md`),'utf8'),await readFile(path.join(built.outDir,`templates/${key}.md`),'utf8'));
+    }
     assert.throws(() => markdown('## heading\n\n```\nunclosed'));
     await assert.rejects(() => build({root,outDir:path.dirname(root)}),/출력 폴더/);
     for (const file of await readdir(path.join(root,'content/posts'))) await rm(path.join(root,'content/posts',file));

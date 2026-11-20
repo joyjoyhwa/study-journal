@@ -1,7 +1,7 @@
 ---
 title: "현실이 된 가상현실을 향하여"
 date: "2026-11-03"
-category: "journal"
+category: "diary"
 tags: ["풀다이브", "비침습", "시작"]
 summary: "풀다이브라는 개념을 구체화하고, 그것을 활용해 사람들이 경험할 수 있는 세상을 만드는 것. 내가 바라보는 방향은 그곳까지 이어져 있다."
 draft: false
