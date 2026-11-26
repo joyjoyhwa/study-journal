@@ -43,7 +43,10 @@ test('Complete build: subpath links, drafts, feed, sitemap, images and empty con
   const root = await mkdtemp(path.join(os.tmpdir(),'study-journal-test-'));
   try {
     for (const directory of ['templates','public']) await cp(path.join(projectRoot,directory),path.join(root,directory),{recursive:true});
-    await cp(path.join(projectRoot,'site.config.json'),path.join(root,'site.config.json'));
+    const configPath = path.join(root,'site.config.json');
+    const config = JSON.parse(await readFile(path.join(projectRoot,'site.config.json'),'utf8'));
+    const supportUrl = 'https://example.com/support-fixture';
+    await writeFile(configPath,JSON.stringify({...config,supportUrl}));
     await mkdir(path.join(root,'content/posts'),{recursive:true});
     await writeFile(path.join(root,'content/posts/default-fixture.md'),'---\ntitle: "Default fixture"\ndate: "2026-11-03"\ncategory: "diary"\ntags: ["fixture"]\nsummary: "Build verification fixture"\ndraft: false\n---\n\n## Heading\n\nA temporary test fixture.\n');
     await writeFile(path.join(root,'content/posts/hidden-draft.md'),'---\ntitle: "DO-NOT-PUBLISH"\ndraft: true\n---\nPRIVATE-DRAFT-TEXT');
@@ -57,6 +60,16 @@ test('Complete build: subpath links, drafts, feed, sitemap, images and empty con
       const html = await readFile(file,'utf8');
       assert.ok(!html.includes('DO-NOT-PUBLISH'));
       assert.ok(!html.includes('PRIVATE-DRAFT-TEXT'));
+      const isPost = path.relative(built.outDir,file).split(path.sep).join('/') === 'notes/default-fixture/index.html';
+      const supportHref = `href="${supportUrl}"`;
+      assert.equal(html.split(supportHref).length - 1,1,`Expected one support link in ${file}`);
+      assert.equal(html.slice(html.indexOf('<footer class="site-footer">')).includes(supportHref),!isPost);
+      assert.equal(html.includes('class="author-signoff"'),isPost);
+      assert.equal(html.includes('src="/study-log/images/joy-otter.webp"'),isPost);
+      if (isPost) {
+        assert.ok(html.indexOf('A temporary test fixture.') < html.indexOf(supportHref));
+        assert.ok(html.indexOf(supportHref) < html.indexOf('<div class="article-bottom">'));
+      }
       for (const match of html.matchAll(/(?:href|src)="([^"#]+)"/g)) {
         const link = match[1].replaceAll('&amp;','&');
         if (/^https?:/.test(link)) continue;
@@ -86,6 +99,14 @@ test('Complete build: subpath links, drafts, feed, sitemap, images and empty con
     }
     assert.throws(() => markdown('## heading\n\n```\nunclosed'));
     await assert.rejects(() => build({root,outDir:path.dirname(root)}),/출력 폴더/);
+    for (const supportUrl of ['', undefined]) {
+      await writeFile(configPath,JSON.stringify({...config,supportUrl}));
+      await build({root});
+      for (const file of htmlFiles) {
+        const html = await readFile(file,'utf8');
+        assert.doesNotMatch(html,/class="(?:support-link|author-signoff)"|joy-otter\.webp/);
+      }
+    }
     for (const file of await readdir(path.join(root,'content/posts'))) await rm(path.join(root,'content/posts',file));
     const empty = await build({root,basePath:''});
     assert.equal(empty.postCount,0);
