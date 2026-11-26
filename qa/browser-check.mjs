@@ -142,7 +142,14 @@ try {
   await check('Article palettes: default, distinct colors, small-screen readability and navigation reset',async () => {
     await go('notes/2026-11-03-beginning/');
     assert.equal(await page.locator('body').getAttribute('data-theme'),'forest');
-    assert.deepEqual(await page.locator('.reading-layout').evaluate(node => [getComputedStyle(node).backgroundColor,getComputedStyle(node).color]),['rgb(246, 245, 240)','rgb(52, 70, 63)']);
+    const readingColors = await page.locator('.reading-layout').evaluate(layout => {
+      let paper = layout;
+      while (paper.parentElement && getComputedStyle(paper).backgroundColor === 'rgba(0, 0, 0, 0)') {
+        paper = paper.parentElement;
+      }
+      return [getComputedStyle(paper).backgroundColor, getComputedStyle(layout).color];
+    });
+    assert.deepEqual(readingColors,['rgb(246, 245, 240)','rgb(52, 70, 63)']);
     const backgrounds = new Set();
     for (const theme of ['forest','ocean','clay']) {
       for (const width of [1440,390,320]) {
