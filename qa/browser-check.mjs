@@ -27,7 +27,14 @@ page.on('requestfailed',request => {
   else result.errors.push(message);
 });
 async function check(name,run) { try { await run(); result.checks.push({name,passed:true}); console.log(`PASS ${name}`); } catch (error) { result.checks.push({name,passed:false,error:error.message}); console.error(`FAIL ${name}: ${error.message.slice(0,350)}`); } }
-async function go(route = '') { const response = await page.goto(new URL(route,base).href); await page.evaluate(() => Promise.all([document.fonts.ready,...[...document.images].map(img => img.decode())])); return response; }
+async function go(route = '') {
+  const response = await page.goto(new URL(route,base).href);
+  await page.evaluate(() => {
+    const images = [...document.images].filter(img => img.loading !== 'lazy' || img.complete);
+    return Promise.all([document.fonts.ready, ...images.map(img => img.decode())]);
+  });
+  return response;
+}
 async function shot(name) { const filename = `${name}.png`; await page.screenshot({path:path.join(screenshots,filename),fullPage:true}); result.screenshots.push(filename); }
 async function visiblePosts(count) { assert.equal(await page.locator('[data-post]:visible').count(),count); }
 async function noOverflow() { assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),`Horizontal overflow at ${page.viewportSize().width}px`); }
@@ -112,6 +119,13 @@ try {
   });
   await check('Mobile detail, paper table and responsive widths',async () => {
     await go('notes/2026-11-03-beginning/'); await shot('mobile-article'); await axe('mobile-article');
+    const signoff = page.locator('.author-signoff');
+    if (await signoff.count()) {
+      await signoff.scrollIntoViewIfNeeded();
+      const avatar = signoff.locator('img');
+      await avatar.evaluate(img => img.decode());
+      assert.ok(await avatar.evaluate(img => img.naturalWidth > 0));
+    }
     for (const width of [320,390,768,1440]) {
       await page.setViewportSize({width,height:900});
       for (const route of ['', 'notes/2026-11-03-beginning/','notes/2026-11-20-bci-eeg-hardware/','guide/','guide/experiment/']) { await go(route); await noOverflow(); }
