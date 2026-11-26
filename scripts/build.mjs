@@ -34,9 +34,19 @@ const searchIcon = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5
 const labelDate = date => date.replaceAll('-', '.');
 const longDate = date => { const [y,m,d] = date.split('-'); return `${y}년 ${Number(m)}월 ${Number(d)}일`; };
 
+function renderSupportLink(value) {
+  if (value === undefined || value === '') return '';
+  const url = typeof value === 'string' && /^https:\/\//i.test(value) && URL.canParse(value) ? new URL(value) : null;
+  if (!url || url.username || url.password || !url.hostname.includes('.')) {
+    throw new Error('supportUrl에 공개 후원 페이지의 https:// 주소를 입력하거나 비워 두세요.');
+  }
+  return `<p><a class="text-link" href="${esc(url.href)}" rel="noreferrer">공부 기록 응원하기 <span aria-hidden="true">☕</span></a></p>`;
+}
+
 export async function build(options = {}) {
   const root = options.root || projectRoot;
   const config = JSON.parse(await readFile(path.join(root, 'site.config.json'), 'utf8'));
+  const supportLink = renderSupportLink(config.supportUrl);
   const base = normalizeBase(options.basePath ?? process.env.BASE_PATH ?? config.basePath);
   const origin = (options.url ?? process.env.SITE_URL ?? config.url).replace(/\/$/, '');
   if (origin && (!/^https?:\/\//.test(origin) || new URL(origin).pathname !== '/')) throw new Error('url에는 경로 없는 https://사용자.github.io 형식을 사용하세요.');
@@ -84,7 +94,7 @@ export async function build(options = {}) {
   pages.set('/notes/', shell('모든 공부 기록','/notes/',`<div class="page-container archive-page"><div class="page-intro"><span class="eyebrow">ONE PAGE AT A TIME</span><h1>공부가 쌓이는 곳.</h1><p>잘 알게 된 것과 아직 모르는 것을 함께 기록합니다.</p></div>${feed()}</div>`));
   const contents = headings => `<aside class="toc"><span class="eyebrow">이 글의 순서</span><nav aria-label="글 목차">${headings.map((h,i) => `<a href="#${esc(h.id)}"><span>${String(i+1).padStart(2,'0')}</span>${esc(h.title)}</a>`).join('')}</nav></aside>`;
   for (const post of posts) {
-    const content = `<div class="page-container article-page"><a class="back-link" href="${href('/notes/')}">← 모든 기록</a><header class="article-header"><div class="article-meta"><a class="category-label" href="${href('/notes/')}?category=${post.category}">${categories[post.category]}</a><span class="meta-divider"></span><time datetime="${post.date}">${longDate(post.date)}</time></div><h1>${esc(post.title)}</h1><p class="article-summary">${esc(post.summary)}</p><div class="tag-list">${post.tags.map(tag => `<a href="${tagLink(tag)}">#${esc(tag)}</a>`).join('')}</div></header><div class="reading-layout">${contents(post.headings)}<article class="prose">${post.html}<div class="article-end"><span class="small-dot"></span><p>${post.category === 'diary' ? '오늘의 기록은 여기까지.<br>다음 공부에서 다시 이어갑니다.' : post.category === 'experiment' ? '실험 기록의 끝' : '공부 노트의 끝'}</p></div></article></div><div class="article-bottom"><a class="text-link" href="${href('/notes/')}">← 모든 공부 기록</a><a class="text-link" href="${href('/guide/')}">기록은 이렇게 남깁니다 ${arrow}</a></div></div>`;
+    const content = `<div class="page-container article-page"><a class="back-link" href="${href('/notes/')}">← 모든 기록</a><header class="article-header"><div class="article-meta"><a class="category-label" href="${href('/notes/')}?category=${post.category}">${categories[post.category]}</a><span class="meta-divider"></span><time datetime="${post.date}">${longDate(post.date)}</time></div><h1>${esc(post.title)}</h1><p class="article-summary">${esc(post.summary)}</p><div class="tag-list">${post.tags.map(tag => `<a href="${tagLink(tag)}">#${esc(tag)}</a>`).join('')}</div></header><div class="reading-layout">${contents(post.headings)}<article class="prose">${post.html}<div class="article-end"><span class="small-dot"></span><p>${post.category === 'diary' ? '오늘의 기록은 여기까지.<br>다음 공부에서 다시 이어갑니다.' : post.category === 'experiment' ? '실험 기록의 끝' : '공부 노트의 끝'}</p></div>${supportLink}</article></div><div class="article-bottom"><a class="text-link" href="${href('/notes/')}">← 모든 공부 기록</a><a class="text-link" href="${href('/guide/')}">기록은 이렇게 남깁니다 ${arrow}</a></div></div>`;
     pages.set(post.route, shell(post.title,post.route,content,{description:post.summary,article:true,theme:post.theme}));
   }
   const guideHeader = `<div class="page-intro"><span class="eyebrow">A FRAME FOR LEARNING</span><h1>기록에도 작은 순서를.</h1><p>일기, 실험, 공부 노트. 기록의 목적에 맞는 작성 틀을 골라 보세요.</p></div>`;
